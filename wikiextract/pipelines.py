@@ -65,7 +65,7 @@ class WikiextractPipeline(object):
 
         return '\n'.join(inner)
 
-    def process_item(self, domain, item):
+    def process_item(self, item, spider):
         item['content'] = self.restructureHtml(item['content'].encode('UTF-8'))
         item['content'] = self.template % item['content']
 

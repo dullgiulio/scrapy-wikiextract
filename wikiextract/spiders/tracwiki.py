@@ -10,7 +10,8 @@ from scrapy.http import Request
 from wikiextract.items import WikiItem
 
 class TracwikiSpider(CrawlSpider):
-    domain_name = 'localhost'
+    name = 'localhost'
+    domain_name = 'localhost' # Compatiblity? 0.8
     allowed_domains = ['localhost']
     start_urls = ['http://localhost/trac/main/wiki/WikiStart']
     http_user = ''
@@ -20,7 +21,7 @@ class TracwikiSpider(CrawlSpider):
         creds = open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'password.txt')).readline()
         self.http_user, self.http_pass = creds.split(',', 1)
         super(CrawlSpider, self).__init__()
-
+    
     def parse(self, response):
         xs = HtmlXPathSelector(response)
         
@@ -32,8 +33,12 @@ class TracwikiSpider(CrawlSpider):
         content = xs.select('//div[@id="content"]/div[1]').extract()
 
         if isinstance(content, list):
-            content = u''.join(content)
-        
+            content = u''.join(content).encode('utf-8')
+
+        # Not unicode...
+        if isinstance(content, str):
+            content = unicode(content.encode('string_escape'))
+
         content = content.replace(u'"/trac/main/wiki/', u'"/docs/')
 
         if breadcrumb:
@@ -45,9 +50,9 @@ class TracwikiSpider(CrawlSpider):
         
             content = content.replace(u'<br style="clear: both">', u'<br style="clear: both" />')
 
-        # Fuck that.
-        content = ''.join([x for x in content if ord(x) in range(128)])
-
         yield WikiItem(url=response.url, content=content)
+
+    # Compatibility
+    parse_item = parse
 
 SPIDER = TracwikiSpider()
