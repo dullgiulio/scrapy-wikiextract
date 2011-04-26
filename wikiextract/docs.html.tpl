@@ -1,9 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-	<title>Pilvit - Polluting the websphere - Scripts</title>
-	<link rel="stylesheet" type="text/css" href="/css/pilvi-style.css" />
+    <meta charset="utf-8" />
+	<title>Pilvit - Polluting the websphere - Documentation</title>
+    <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css' />
+    <link rel="stylesheet" type="text/css" href="/css/pilvi-style.css" />
 	<link rel="shortcut icon" href="/favicon.ico" />
 </head>
 <body>
@@ -24,10 +25,15 @@
 	</div>
 	<div style="clear: both;"></div>
 </div>
+
+<div id="fixedoverlay"></div>
+
 <div id="main">
-	<div class="contentblock">
+<div class="contentblock">
+
 %s
-	</div>
+
+</div>
 </div>
 
 <div id="bottominner" style="margin-top: 30px;">

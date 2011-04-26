@@ -7,7 +7,9 @@
 import os
 import sys
 import shutil
-from xml.dom import minidom
+from lxml import html as lhtml
+from lxml import etree
+#from xml.dom import minidom
 from urlparse import urlparse
 
 class WikiextractPipeline(object):
@@ -16,7 +18,8 @@ class WikiextractPipeline(object):
 
     def restructureHtml(self, content):
         '''Add some tags needed to keep style the same as the rest of the site.'''
-        tdom = minidom.parseString(content)
+        # tdom = minidom.parseString(content)
+        tdom = lhtml.document_fromstring(content)
         current_id = ''
         inner = []
         deepinner = []
@@ -29,35 +32,33 @@ class WikiextractPipeline(object):
 '''
         nodes = None
 
-        # Workaround for when there is breadcrumb at top level.
-        if isinstance(tdom.childNodes[0].childNodes[0], minidom.Element) and \
-           tdom.childNodes[0].childNodes[0].tagName == 'p' and \
-           tdom.childNodes[0].childNodes[1].tagName == 'div':
-            nodes = tdom.childNodes[0].childNodes[1].childNodes
-        else:
-            nodes = tdom.childNodes[0].childNodes
+        rootNodes = tdom.getchildren()
+        nodes = rootNodes[0].getchildren()[0].getchildren()
+
+        if not nodes:
+            # TODO: What is the situation like here?
+            nodes = rootNodes[0].getchildren()
 
         for node in nodes:
-            # Simple text, append to the page.
-            if isinstance(node, minidom.Text):
-                inner.append(node.toxml())
             # Element: If it's a heading element, I'll add a special label to be
             # displayed on the right, otherwise just append to the page.
-            elif isinstance(node, minidom.Element):
-                if node.tagName[0] == 'h':
-                    if current_id:
-                        inner.append(innerformat.format(current_id, ''.join(deepinner)))
+            if node.tag[0] == 'h':
+                if current_id:
+                    inner.append(innerformat\
+                            .format(current_id, ''.join(deepinner))
+                            .replace('\\n', '\n').replace("\\'", "'"))
                     
-                    deepinner = []
-                    current_id = node.getAttribute('id')
-                    deepinner.append(u'''\
+                deepinner = []
+                current_id = node.get('id')
+                deepinner.append(u'''\
 <div class="sideinfo">
     <div class="date normal" id="mark-{0}">{1}</div>
 </div>
 <{2} class="smalltitle">{1}</{2}>
-'''.format(current_id, node.childNodes[0].nodeValue, node.tagName))
-                else:
-                    deepinner.append(node.toxml())
+'''.format(current_id, node.text, node.tag))
+            else:
+                content = etree.tostring(node, pretty_print=True).replace('\\n', '\n').replace("\\'", "'")
+                deepinner.append(content)
         
         # Let's not forget the last lines...
         if deepinner:
